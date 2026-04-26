@@ -494,6 +494,7 @@
       ⭐ الـ Metrics اللي أستخدمها
       <span class="my-count-badge" id="myCountBadge">0</span>
     </button>
+    <button id="shareLinkBtn" onclick="copyShareLink()" style="padding:6px 14px;border-radius:8px;border:1px solid #2a2a40;background:#1a1a26;color:#8888aa;font-family:Cairo,sans-serif;font-size:12px;font-weight:600;cursor:pointer;white-space:nowrap;">🔗 شارك القائمة</button>
   </div>
 </div>
 
@@ -582,13 +583,33 @@ const myCountBadge = document.getElementById('myCountBadge');
 let activeFilter = 'All';
 let showingMyMetrics = false;
 
-// Load saved list from localStorage
-let myList = new Set(JSON.parse(localStorage.getItem('watad_my_metrics') || '[]'));
+// Load from URL hash — القائمة محفوظة في الرابط نفسه
+function loadFromHash() {
+  try {
+    const hash = window.location.hash.slice(1);
+    if (!hash) return new Set();
+    return new Set(JSON.parse(decodeURIComponent(hash)));
+  } catch { return new Set(); }
+}
+
+let myList = loadFromHash();
 
 totalCount.textContent = metrics.length;
 
 function saveMyList() {
-  localStorage.setItem('watad_my_metrics', JSON.stringify([...myList]));
+  if (myList.size === 0) {
+    history.replaceState(null, '', window.location.pathname + window.location.search);
+  } else {
+    history.replaceState(null, '', '#' + encodeURIComponent(JSON.stringify([...myList])));
+  }
+}
+
+function copyShareLink() {
+  navigator.clipboard.writeText(window.location.href).then(() => {
+    const btn = document.getElementById('shareLinkBtn');
+    btn.textContent = '✓ تم نسخ الرابط';
+    setTimeout(() => { btn.textContent = '🔗 شارك القائمة'; }, 2000);
+  });
 }
 
 function updateBadge() {

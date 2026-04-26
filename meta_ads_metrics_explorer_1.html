@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="ar" dir="rtl">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Meta Ads Metrics Explorer — Watad</title>
+<link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;600;700;900&family=IBM+Plex+Mono:wght@400;600&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --surface: #12121a;
+    --card: #1a1a26;
+    --card-hover: #1f1f30;
+    --border: #2a2a40;
+    --accent-blue: #1877F2;
+    --accent-blue-glow: rgba(24,119,242,0.15);
+    --accent-green: #00c896;
+    --accent-orange: #ff8c42;
+    --accent-purple: #a855f7;
+    --accent-pink: #ec4899;
+    --text-primary: #f0f0fa;
+    --text-secondary: #8888aa;
+    --text-muted: #555570;
+    --tag-conv: #1a3a2a;
+    --tag-conv-text: #00c896;
+    --tag-eng: #1a2a3a;
+    --tag-eng-text: #60a5fa;
+    --tag-vid: #2a1a3a;
+    --tag-vid-text: #c084fc;
+    --tag-break: #3a2a1a;
+    --tag-break-text: #fb923c;
+    --tag-core: #2a1a1a;
+    --tag-core-text: #f87171;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    min-height: 100vh;
+    direction: rtl;
+  }
+
+  /* Header */
+  header {
+    background: linear-gradient(135deg, #0d1117 0%, #12121a 50%, #0d0d1a 100%);
+    border-bottom: 1px solid var(--border);
+    padding: 28px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    backdrop-filter: blur(20px);
+  }
+
+  .header-brand {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+  }
+
+  .logo-icon {
+    width: 42px;
+    height: 42px;
+    background: var(--accent-blue);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    font-weight: 900;
+    color: white;
+    letter-spacing: -1px;
+  }
+
+  .header-title {
+    font-size: 20px;
+    font-weight: 900;
+    color: var(--text-primary);
+    letter-spacing: -0.5px;
+  }
+
+  .header-subtitle {
+    font-size: 12px;
+    color: var(--text-secondary);
+    margin-top: 2px;
+  }
+
+  .header-meta {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--accent-blue-glow);
+    border: 1px solid rgba(24,119,242,0.3);
+    border-radius: 20px;
+    padding: 6px 16px;
+    font-size: 12px;
+    color: var(--accent-blue);
+    font-weight: 600;
+  }
+
+  /* Search & Filter Bar */
+  .controls {
+    padding: 24px 40px;
+    background: var(--surface);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .search-wrap {
+    flex: 1;
+    min-width: 220px;
+    position: relative;
+  }
+
+  .search-icon {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: var(--text-muted);
+    font-size: 16px;
+    pointer-events: none;
+  }
+
+  .search-input {
+    width: 100%;
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 11px 42px 11px 16px;
+    color: var(--text-primary);
+    font-family: 'Cairo', sans-serif;
+    font-size: 14px;
+    outline: none;
+    direction: rtl;
+    transition: border-color 0.2s, box-shadow 0.2s;
+  }
+
+  .search-input::placeholder { color: var(--text-muted); }
+  .search-input:focus {
+    border-color: var(--accent-blue);
+    box-shadow: 0 0 0 3px var(--accent-blue-glow);
+  }
+
+  .filter-btns {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+  }
+
+  .filter-btn {
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: 1px solid var(--border);
+    background: var(--card);
+    color: var(--text-secondary);
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+    white-space: nowrap;
+  }
+
+  .filter-btn:hover { border-color: var(--text-secondary); color: var(--text-primary); }
+  .filter-btn.active { background: var(--accent-blue); border-color: var(--accent-blue); color: white; }
+  .filter-btn[data-cat="Conversions"].active { background: var(--tag-conv-text); border-color: var(--tag-conv-text); color: #000; }
+  .filter-btn[data-cat="Engagement"].active { background: #3b82f6; border-color: #3b82f6; color: white; }
+  .filter-btn[data-cat="Video"].active { background: var(--accent-purple); border-color: var(--accent-purple); color: white; }
+  .filter-btn[data-cat="Breakdown"].active { background: var(--accent-orange); border-color: var(--accent-orange); color: white; }
+  .filter-btn[data-cat="Core"].active { background: #f87171; border-color: #f87171; color: #000; }
+
+  /* Stats bar */
+  .stats-bar {
+    padding: 12px 40px;
+    background: var(--bg);
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    gap: 24px;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+
+  .stat-item {
+    font-size: 12px;
+    color: var(--text-muted);
+  }
+
+  .stat-item strong {
+    color: var(--text-primary);
+    font-weight: 700;
+    margin-left: 4px;
+  }
+
+  /* My Metrics Tab */
+  .my-metrics-tab {
+    margin-right: auto;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .my-metrics-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 6px 16px;
+    border-radius: 20px;
+    border: 1px solid rgba(255,140,66,0.4);
+    background: rgba(255,140,66,0.08);
+    color: var(--accent-orange);
+    font-family: 'Cairo', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+
+  .my-metrics-btn:hover, .my-metrics-btn.active {
+    background: var(--accent-orange);
+    border-color: var(--accent-orange);
+    color: #000;
+  }
+
+  .my-count-badge {
+    background: var(--accent-orange);
+    color: #000;
+    border-radius: 10px;
+    padding: 1px 7px;
+    font-size: 11px;
+    font-weight: 900;
+    min-width: 20px;
+    text-align: center;
+  }
+
+  .my-metrics-btn.active .my-count-badge {
+    background: #000;
+    color: var(--accent-orange);
+  }
+
+  /* Add to My List button on cards */
+  .add-btn {
+    position: absolute;
+    bottom: 12px;
+    right: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--text-muted);
+    font-size: 11px;
+    font-family: 'Cairo', sans-serif;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+
+  .metric-card:hover .add-btn { opacity: 1; }
+  .add-btn:hover { background: rgba(255,140,66,0.15); border-color: var(--accent-orange); color: var(--accent-orange); }
+  .add-btn.added { opacity: 1; background: rgba(255,140,66,0.15); border-color: var(--accent-orange); color: var(--accent-orange); }
+  .add-btn.added:hover { background: rgba(239,68,68,0.15); border-color: #ef4444; color: #ef4444; }
+
+  /* My Metrics empty state */
+  .my-empty {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+
+  .my-empty-icon { font-size: 48px; margin-bottom: 16px; }
+  .my-empty-text { font-size: 16px; font-weight: 700; color: var(--text-secondary); margin-bottom: 8px; }
+  .my-empty-sub { font-size: 13px; color: var(--text-muted); }
+
+  /* Grid */
+  .grid-container {
+    padding: 32px 40px;
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 16px;
+  }
+
+  /* Section Headers */
+  .section-header {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 0 4px;
+    margin-top: 8px;
+  }
+
+  .section-title {
+    font-size: 13px;
+    font-weight: 700;
+    color: var(--text-muted);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  .section-line {
+    flex: 1;
+    height: 1px;
+    background: var(--border);
+  }
+
+  /* Cards */
+  .metric-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    padding: 18px 20px;
+    cursor: pointer;
+    transition: all 0.2s;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .metric-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    right: 0;
+    width: 3px;
+    height: 100%;
+    opacity: 0;
+    transition: opacity 0.2s;
+  }
+
+  .metric-card:hover {
+    background: var(--card-hover);
+    border-color: #3a3a55;
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  }
+
+  .metric-card:hover::before { opacity: 1; }
+  .metric-card[data-cat="Conversions"]::before { background: var(--tag-conv-text); }
+  .metric-card[data-cat="Engagement"]::before { background: #60a5fa; }
+  .metric-card[data-cat="Video"]::before { background: var(--accent-purple); }
+  .metric-card[data-cat="Breakdown"]::before { background: var(--accent-orange); }
+  .metric-card[data-cat="Core"]::before { background: #f87171; }
+
+  .metric-card.hidden { display: none; }
+
+  .card-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 10px;
+    gap: 8px;
+  }
+
+  .card-category {
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
+    color: var(--text-muted);
+    white-space: nowrap;
+  }
+
+  .tag {
+    padding: 3px 9px;
+    border-radius: 5px;
+    font-size: 10px;
+    font-weight: 700;
+    white-space: nowrap;
+  }
+
+  .tag-Conversions { background: var(--tag-conv); color: var(--tag-conv-text); }
+  .tag-Engagement { background: var(--tag-eng); color: var(--tag-eng-text); }
+  .tag-Video { background: var(--tag-vid); color: var(--tag-vid-text); }
+  .tag-Breakdown { background: var(--tag-break); color: var(--tag-break-text); }
+  .tag-Core { background: var(--tag-core); color: var(--tag-core-text); }
+
+  .card-api-name {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 11px;
+    color: var(--text-muted);
+    margin-bottom: 6px;
+    word-break: break-all;
+    direction: ltr;
+    text-align: left;
+  }
+
+  .card-en-name {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--text-primary);
+    margin-bottom: 4px;
+    line-height: 1.3;
+  }
+
+  .card-ar-name {
+    font-size: 13px;
+    color: var(--text-secondary);
+    font-weight: 600;
+    line-height: 1.4;
+  }
+
+  /* Copy button */
+  .copy-btn {
+    position: absolute;
+    bottom: 12px;
+    left: 12px;
+    background: transparent;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 4px 10px;
+    color: var(--text-muted);
+    font-size: 10px;
+    font-family: 'IBM Plex Mono', monospace;
+    cursor: pointer;
+    opacity: 0;
+    transition: all 0.2s;
+  }
+
+  .metric-card:hover .copy-btn { opacity: 1; }
+  .copy-btn:hover { background: var(--border); color: var(--text-primary); }
+  .copy-btn.copied { color: var(--accent-green); border-color: var(--accent-green); }
+
+  /* No results */
+  .no-results {
+    grid-column: 1/-1;
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--text-muted);
+  }
+
+  .no-results-icon { font-size: 48px; margin-bottom: 16px; }
+  .no-results-text { font-size: 16px; font-weight: 600; }
+
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 32px;
+    color: var(--text-muted);
+    font-size: 12px;
+    border-top: 1px solid var(--border);
+    margin-top: 20px;
+  }
+
+  @media (max-width: 600px) {
+    header, .controls, .stats-bar, .grid-container { padding-left: 16px; padding-right: 16px; }
+    .grid-container { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-brand">
+    <div class="logo-icon">f</div>
+    <div>
+      <div class="header-title">Meta Ads Metrics Explorer</div>
+      <div class="header-subtitle">دليل مقاييس إعلانات Meta — Watad Agency</div>
+    </div>
+  </div>
+  <div class="header-meta">
+    <span>●</span>
+    <span>Meta Ads API 2025</span>
+  </div>
+</header>
+
+<div class="controls">
+  <div class="search-wrap">
+    <span class="search-icon">🔍</span>
+    <input class="search-input" type="text" placeholder="ابحث بالاسم العربي، الإنجليزي، أو الـ API..." id="searchInput" />
+  </div>
+  <div class="filter-btns">
+    <button class="filter-btn active" data-cat="All">الكل</button>
+    <button class="filter-btn" data-cat="Core">Core</button>
+    <button class="filter-btn" data-cat="Conversions">التحويلات</button>
+    <button class="filter-btn" data-cat="Engagement">التفاعل</button>
+    <button class="filter-btn" data-cat="Video">الفيديو</button>
+    <button class="filter-btn" data-cat="Breakdown">التوزيع</button>
+  </div>
+</div>
+
+<div class="stats-bar">
+  <div class="stat-item">إجمالي المقاييس: <strong id="totalCount">0</strong></div>
+  <div class="stat-item">الظاهر الآن: <strong id="visibleCount">0</strong></div>
+  <div class="my-metrics-tab">
+    <button class="my-metrics-btn" id="myMetricsBtn" onclick="toggleMyMetrics()">
+      ⭐ الـ Metrics اللي أستخدمها
+      <span class="my-count-badge" id="myCountBadge">0</span>
+    </button>
+  </div>
+</div>
+
+<div class="grid-container" id="grid"></div>
+
+<footer>
+  Watad Media Agency — Meta Ads Metrics Reference 2025 · Built for Media Buyers
+</footer>
+
+<script>
+const metrics = [
+  // Core
+  { api: "reach", en: "Reach", ar: "الوصول", cat: "Core", group: "Core" },
+  { api: "impressions", en: "Impressions", ar: "الانطباعات", cat: "Core", group: "Core" },
+  { api: "frequency", en: "Frequency", ar: "التكرار", cat: "Core", group: "Core" },
+  { api: "spend", en: "Amount Spent", ar: "المبلغ المنفق", cat: "Core", group: "Core" },
+  { api: "cpm", en: "CPM", ar: "تكلفة الألف ظهور", cat: "Core", group: "Core" },
+  { api: "cpc", en: "CPC (All)", ar: "تكلفة النقرة", cat: "Core", group: "Core" },
+  { api: "ctr", en: "CTR (All)", ar: "نسبة النقر للظهور", cat: "Core", group: "Core" },
+  { api: "clicks", en: "Clicks (All)", ar: "النقرات الكلية", cat: "Core", group: "Core" },
+  { api: "inline_link_clicks", en: "Link Clicks", ar: "نقرات الرابط", cat: "Core", group: "Core" },
+  { api: "inline_link_click_ctr", en: "Link CTR", ar: "نسبة نقر الرابط", cat: "Core", group: "Core" },
+  { api: "cost_per_inline_link_click", en: "Cost per Link Click", ar: "تكلفة نقرة الرابط", cat: "Core", group: "Core" },
+  // Conversions
+  { api: "actions_lead", en: "Leads", ar: "عدد الليدز الكلي", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "cost_per_action_type_lead", en: "CPL", ar: "تكلفة الليد الواحد", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "unique_actions_lead", en: "Unique Leads", ar: "ليدز فريدة — بدون تكرار", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "cost_per_unique_action_type_lead", en: "Cost per Unique Lead", ar: "تكلفة الليد الفريد", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_complete_registration", en: "Complete Registration", ar: "إتمام التسجيل", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "cost_per_action_type_complete_registration", en: "Cost per Registration", ar: "تكلفة التسجيل", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_purchase", en: "Purchases", ar: "عمليات الشراء", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "cost_per_action_type_purchase", en: "CPP (Cost/Purchase)", ar: "تكلفة الشراء", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_initiate_checkout", en: "Initiate Checkout", ar: "بدء الدفع", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "cost_per_action_type_initiate_checkout", en: "Cost/Checkout", ar: "تكلفة بدء الدفع", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_add_to_cart", en: "Add to Cart", ar: "إضافة للسلة", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_view_content", en: "View Content", ar: "مشاهدة صفحة المحتوى", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_search", en: "Search", ar: "بحث داخل الموقع", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "actions_landing_page_view", en: "Landing Page Views", ar: "مشاهدات صفحة الهبوط", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "cost_per_action_type_landing_page_view", en: "Cost/Landing Page View", ar: "تكلفة مشاهدة صفحة الهبوط", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "website_purchase_roas_offsite_conversion_fb_pixel_purchase", en: "Website Purchase ROAS", ar: "عائد الإنفاق على الشراء", cat: "Conversions", group: "التحويلات والليدز" },
+  { api: "omni_purchase_roas", en: "Omni Purchase ROAS", ar: "عائد الإنفاق — كل القنوات", cat: "Conversions", group: "التحويلات والليدز" },
+  // Engagement
+  { api: "actions_post_engagement", en: "Post Engagement", ar: "كل تفاعلات المنشور", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_page_engagement", en: "Page Engagement", ar: "تفاعل صفحة", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_post_reaction", en: "Reactions", ar: "تفاعلات (لايك، حب، وإلخ)", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_comment", en: "Comments", ar: "التعليقات", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_post", en: "Shares", ar: "المشاركات", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_like", en: "Page Likes", ar: "إعجابات الصفحة", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_photo_view", en: "Photo Views", ar: "مشاهدات الصور", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_onsite_conversion_messaging_conversation_started_7d", en: "Conversations Started", ar: "محادثات بدأت — مانجر بدأك", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "cost_per_action_type_onsite_conversion_messaging_conversation_started_7d", en: "Cost/Conversation", ar: "تكلفة المحادثة", cat: "Engagement", group: "التفاعل والمشاركة" },
+  { api: "actions_onsite_conversion_messaging_profile_visits", en: "Instagram Profile Visits", ar: "زيارات البروفايل على انستغرام", cat: "Engagement", group: "التفاعل والمشاركة" },
+  // Video
+  { api: "video_play_actions_video_view", en: "Video Plays", ar: "عدد مرات تشغيل الفيديو", cat: "Video", group: "الفيديو" },
+  { api: "video_p25_watched_actions_video_view", en: "Video 25% Watched", ar: "شاهد 25% من الفيديو", cat: "Video", group: "الفيديو" },
+  { api: "video_p50_watched_actions_video_view", en: "Video 50% Watched", ar: "شاهد 50% من الفيديو", cat: "Video", group: "الفيديو" },
+  { api: "video_p75_watched_actions_video_view", en: "Video 75% Watched", ar: "شاهد 75% من الفيديو", cat: "Video", group: "الفيديو" },
+  { api: "video_p95_watched_actions_video_view", en: "Video 95% Watched", ar: "شاهد 95% من الفيديو", cat: "Video", group: "الفيديو" },
+  { api: "video_p100_watched_actions_video_view", en: "Video Completed", ar: "أكمل الفيديو كاملاً", cat: "Video", group: "الفيديو" },
+  { api: "video_thruplay_watched_actions_video_view", en: "ThruPlay", ar: "شاهد 15 ثانية أو كامل", cat: "Video", group: "الفيديو" },
+  { api: "video_30_sec_watched_actions_video_view", en: "30s Video Views", ar: "شاهد 30 ثانية", cat: "Video", group: "الفيديو" },
+  { api: "video_avg_time_watched_actions_video_view", en: "Avg Watch Time", ar: "متوسط وقت المشاهدة", cat: "Video", group: "الفيديو" },
+  { api: "video_continuous_2_sec_watched_actions_video_view", en: "2s Continuous Views", ar: "شاهد ثانيتين متواصلتين", cat: "Video", group: "الفيديو" },
+  { api: "cost_per_thruplay_video_view", en: "Cost/ThruPlay", ar: "تكلفة ThruPlay", cat: "Video", group: "الفيديو" },
+  { api: "actions_video_view", en: "Video Views", ar: "مشاهدات الفيديو الكلية", cat: "Video", group: "الفيديو" },
+  // Breakdown
+  { api: "age", en: "Age", ar: "العمر — تقسيم حسب الفئة العمرية", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "gender", en: "Gender", ar: "الجنس — تقسيم حسب الجنس", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "region", en: "Region", ar: "المنطقة — المحافظة الجغرافية", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "country", en: "Country", ar: "الدولة", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "placement", en: "Placement", ar: "مكان الإعلان — Feed, Reels, Story...", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "publisher_platform", en: "Publisher Platform", ar: "المنصة — Facebook / Instagram", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "device_platform", en: "Device Platform", ar: "الجهاز — موبايل / كمبيوتر", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+  { api: "hourly_stats_aggregated_by_advertiser_time_zone", en: "Hourly Stats", ar: "الإحصائيات بالساعة", cat: "Breakdown", group: "الديموغرافيك والتوزيع" },
+];
+
+// ── State ──────────────────────────────────────────────
+const grid = document.getElementById('grid');
+const searchInput = document.getElementById('searchInput');
+const filterBtns = document.querySelectorAll('.filter-btn');
+const totalCount = document.getElementById('totalCount');
+const visibleCount = document.getElementById('visibleCount');
+const myMetricsBtn = document.getElementById('myMetricsBtn');
+const myCountBadge = document.getElementById('myCountBadge');
+
+let activeFilter = 'All';
+let showingMyMetrics = false;
+
+// Load saved list from localStorage
+let myList = new Set(JSON.parse(localStorage.getItem('watad_my_metrics') || '[]'));
+
+totalCount.textContent = metrics.length;
+
+function saveMyList() {
+  localStorage.setItem('watad_my_metrics', JSON.stringify([...myList]));
+}
+
+function updateBadge() {
+  myCountBadge.textContent = myList.size;
+}
+
+// ── Card Builder ────────────────────────────────────────
+function buildCard(m) {
+  const isAdded = myList.has(m.api);
+  const card = document.createElement('div');
+  card.className = 'metric-card';
+  card.dataset.cat = m.cat;
+  card.dataset.api = m.api;
+
+  card.innerHTML = `
+    <div class="card-top">
+      <div class="card-category">${m.group}</div>
+      <span class="tag tag-${m.cat}">${m.cat}</span>
+    </div>
+    <div class="card-api-name">${m.api}</div>
+    <div class="card-en-name">${m.en}</div>
+    <div class="card-ar-name">${m.ar}</div>
+    <button class="copy-btn" onclick="copyAPI(event, '${m.api}')">نسخ API</button>
+    <button class="add-btn ${isAdded ? 'added' : ''}" onclick="toggleAdd(event, '${m.api}')">
+      ${isAdded ? '★ مضاف' : '☆ أضف لقائمتي'}
+    </button>
+  `;
+  return card;
+}
+
+// ── Render ──────────────────────────────────────────────
+function renderCards(filtered) {
+  grid.innerHTML = '';
+  let currentGroup = null;
+  let count = 0;
+
+  if (showingMyMetrics && filtered.length === 0) {
+    grid.innerHTML = `
+      <div class="my-empty">
+        <div class="my-empty-icon">⭐</div>
+        <div class="my-empty-text">قائمتك فارغة!</div>
+        <div class="my-empty-sub">اضغط "☆ أضف لقائمتي" على أي Metric تستخدمه بشكل متكرر</div>
+      </div>`;
+    visibleCount.textContent = 0;
+    return;
+  }
+
+  filtered.forEach(m => {
+    if (!showingMyMetrics && m.group !== currentGroup) {
+      currentGroup = m.group;
+      const sh = document.createElement('div');
+      sh.className = 'section-header';
+      sh.innerHTML = `<span class="section-title">${m.group}</span><div class="section-line"></div>`;
+      grid.appendChild(sh);
+    }
+    count++;
+    grid.appendChild(buildCard(m));
+  });
+
+  if (count === 0) {
+    grid.innerHTML = `<div class="no-results">
+      <div class="no-results-icon">🔍</div>
+      <div class="no-results-text">ما لقينا نتائج — جرب كلمة ثانية</div>
+    </div>`;
+  }
+
+  visibleCount.textContent = count;
+}
+
+function applyFilters() {
+  const q = searchInput.value.trim().toLowerCase();
+
+  let pool = metrics;
+  if (showingMyMetrics) pool = metrics.filter(m => myList.has(m.api));
+
+  const filtered = pool.filter(m => {
+    const catMatch = showingMyMetrics || activeFilter === 'All' || m.cat === activeFilter;
+    const searchMatch = !q || m.api.toLowerCase().includes(q) || m.en.toLowerCase().includes(q) || m.ar.includes(q);
+    return catMatch && searchMatch;
+  });
+
+  renderCards(filtered);
+}
+
+// ── My Metrics Toggle ───────────────────────────────────
+function toggleMyMetrics() {
+  showingMyMetrics = !showingMyMetrics;
+  myMetricsBtn.classList.toggle('active', showingMyMetrics);
+
+  // Reset filter buttons when entering My Metrics view
+  if (showingMyMetrics) {
+    filterBtns.forEach(b => b.classList.remove('active'));
+  } else {
+    filterBtns.forEach(b => { if (b.dataset.cat === 'All') b.classList.add('active'); });
+    activeFilter = 'All';
+  }
+  applyFilters();
+}
+
+// ── Add / Remove ────────────────────────────────────────
+function toggleAdd(e, api) {
+  e.stopPropagation();
+  const btn = e.currentTarget;
+
+  if (myList.has(api)) {
+    myList.delete(api);
+    btn.textContent = '☆ أضف لقائمتي';
+    btn.classList.remove('added');
+    // If in my metrics view, remove card
+    if (showingMyMetrics) {
+      const card = btn.closest('.metric-card');
+      card.style.transition = 'opacity 0.25s, transform 0.25s';
+      card.style.opacity = '0';
+      card.style.transform = 'scale(0.95)';
+      setTimeout(() => { applyFilters(); }, 260);
+    }
+  } else {
+    myList.add(api);
+    btn.textContent = '★ مضاف';
+    btn.classList.add('added');
+    // Flash animation
+    btn.style.transform = 'scale(1.15)';
+    setTimeout(() => { btn.style.transform = ''; }, 200);
+  }
+
+  saveMyList();
+  updateBadge();
+}
+
+// ── Filter Buttons ──────────────────────────────────────
+filterBtns.forEach(btn => {
+  btn.addEventListener('click', () => {
+    if (showingMyMetrics) { toggleMyMetrics(); }
+    filterBtns.forEach(b => b.classList.remove('active'));
+    btn.classList.add('active');
+    activeFilter = btn.dataset.cat;
+    applyFilters();
+  });
+});
+
+searchInput.addEventListener('input', applyFilters);
+
+// ── Copy ────────────────────────────────────────────────
+function copyAPI(e, api) {
+  e.stopPropagation();
+  navigator.clipboard.writeText(api).then(() => {
+    const btn = e.target;
+    btn.textContent = '✓ تم النسخ';
+    btn.classList.add('copied');
+    setTimeout(() => { btn.textContent = 'نسخ API'; btn.classList.remove('copied'); }, 1500);
+  });
+}
+
+// ── Init ────────────────────────────────────────────────
+updateBadge();
+applyFilters();
+</script>
+</body>
+</html>
